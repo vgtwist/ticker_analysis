@@ -56,7 +56,7 @@ def get_ticker_details (stock):
 
     ticker_info_df = df.tail(1)
 
-    ticker_info_dict = {}
+    ticker_info_dict = {"Symbol":stock}
     ticker_info_dict ["price"] = round(ticker_info_df.iloc[0]["Adj Close"], 2)
 
     ticker_info_dict ["Volume"] = round(ticker_info_df.iloc[0]["Volume"], 2)
