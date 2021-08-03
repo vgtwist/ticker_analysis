@@ -49,10 +49,11 @@ def get_ticker_details (stock):
 
     df["SMA_200"] = indicator_sma.sma_indicator()
 
-    indicator_sma = SMAIndicator(close=df["Volume"], window=20, fillna=True)
+    #indicator_sma = SMAIndicator(close=df["Volume"], window=20, fillna=True)
 
-    df["Volume_SMA_20"] = indicator_sma.sma_indicator()
+    #df["Volume_SMA_20"] = indicator_sma.sma_indicator()
 
+    df["Volume_SMA_20"] = df.rolling(window=20)['Volume'].mean()
 
     ticker_info_df = df.tail(1)
 
@@ -101,5 +102,21 @@ def get_ticker_details (stock):
     df_from_low = df.loc[low_date:]
     ticker_info_dict ["AVWAP Low"] = get_avwap (df_from_low)
 
+    if ticker_info_dict["price"] > ticker_info_dict["AVWAP High"]:
+        ticker_info_dict ["GT_AVWAP"] = 1
+    elif ticker_info_dict["price"] <= ticker_info_dict["AVWAP Low"]:
+        ticker_info_dict ["GT_AVWAP"] = -1
+    else:
+        ticker_info_dict ["GT_AVWAP"] = 0        
+
 
     return ticker_info_dict
+
+def main():
+    stock = 'TSLA'
+    stock_data = get_ticker_details (stock)
+    print (stock_data)
+
+
+if __name__=="__main__":
+    main ()
