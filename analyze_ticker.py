@@ -21,6 +21,8 @@ def get_ticker_details (stock):
     #start = dt.datetime (2019, 1, 1)
     #end = dt.datetime (2020, 1, 1)
 
+    RECENT_HIGH_DAYS = 6
+
     start = dt.datetime.now() - dt.timedelta(days=300)
     end = dt.datetime.now()
 
@@ -94,7 +96,15 @@ def get_ticker_details (stock):
     df_from_high = df.loc[high_date:]
     ticker_info_dict ["AVWAP High"] = get_avwap (df_from_high)
 
-    low_rec = df_from_high[df_from_high['Low']==df_from_high['Low'].min()] 
+    # Check if high is recent -- get low depending on result
+
+    delta = pd.Timestamp.today() - high_date
+
+    if delta.days < RECENT_HIGH_DAYS:
+        low_rec = df[df['Low']==df['Low'].min()] 
+    else:
+        low_rec = df_from_high[df_from_high['Low']==df_from_high['Low'].min()] 
+        
     low_date = low_rec.index[0]    
 
     ticker_info_dict ["Low Date"] = low_date
@@ -113,7 +123,7 @@ def get_ticker_details (stock):
     return ticker_info_dict
 
 def main():
-    stock = 'TSLA'
+    stock = input ("Enter Symbol: ")
     stock_data = get_ticker_details (stock)
     print (stock_data)
 
