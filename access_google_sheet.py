@@ -2,7 +2,7 @@ import gspread
 from gspread.models import Worksheet
 
 def get_worksheet ():
-    gc = gspread.service_account(filename='ticker_analysis/stock-screen-sheet.json')
+    gc = gspread.service_account(filename='stock-screen-sheet.json')
     sh = gc.open_by_key('1fTqUZaEs4QuoWeNrpifPBLc5U6Ltm0OCxDMD9CuGR8c')
     return sh.sheet1
 
