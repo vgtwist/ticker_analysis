@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block content %}
+    <form action="#" method="POST">
+        <div class="mb-3">
+            <label for="stock" class="form-label">Stock Ticker:</label><br>
+            <input type="text" class="form-control" id="stock" name="stock">
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </div>
+    </form>
+    {% if rstock != ""%}
+        <table class="table">
+            <thead>
+                <tr>
+                  <th scope="col">{{ rstock }}</th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
+                </tr>
+                </thead>            
+            <tbody>
+              <tr>
+                <th scope="row">Price</th>
+                <td>{{ stockdict["price"] }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Volume</th>
+                <td>{{ stockdict["Volume"] }}</td>
+                <td></td>
+              </tr>
+              <tr>
+                <th scope="row">Avg Volume</th>                
+                <td>{{ stockdict["Avg Volume"] }}</td>
+                <td></td>
+              </tr>
+              <tr>
+                <th scope="row">AVWAP High</th>
+                <td>{{ stockdict["AVWAP High"] }}</td>
+                <td>{{ stockdict["High Date"] }}</td>
+              </tr>
+              <tr>
+                <th scope="row">AVWAP Low</th>
+                <td>{{ stockdict["AVWAP Low"] }}</td>
+                <td>{{ stockdict["Low Date"] }}</td>
+              </tr>                            
+            </tbody>
+          </table>
+
+          <table class="table">
+            <thead>
+                <tr>
+                    {% if stockdict["GT5"] == 1 %}  
+                        <th class="table-success">5 DMA</th>
+                    {% else %}  
+                        <th class="table-danger">5 DMA</th>
+                    {% endif %}  
+                    {% if stockdict["GT20"] == 1 %}  
+                        <th class="table-success">20 DMA</th>
+                    {% else %}  
+                        <th class="table-danger">20 DMA</th>
+                    {% endif %}  
+                    {% if stockdict["GT50"] == 1 %}  
+                        <th class="table-success">50 DMA</th>
+                    {% else %}  
+                        <th class="table-danger">50 DMA</th>
+                    {% endif %}  
+                    {% if stockdict["GT_AVWAP"] == 1 %}  
+                        <th class="table-success">AVWAP</th>
+                    {% elif stockdict["GT_AVWAP"] == 0 %}   
+                        <th class="table-warning">AVWAP</th>   
+                    {% else %}  
+                        <th class="table-danger">AVWAP</th>
+                    {% endif %}  
+                </tr>
+                </thead>            
+          </table>          
+
+    {% endif %}            
+
+{% endblock content %}

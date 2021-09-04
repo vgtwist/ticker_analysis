@@ -57,6 +57,10 @@ def get_ticker_details (stock):
 
     df["Volume_SMA_20"] = df.rolling(window=20)['Volume'].mean()
 
+    df["RVolume"] = df["Volume"] / df["Volume_SMA_20"]
+
+    df["Closing Range"] = (df["Adj Close"] - df["Low"]) / (df["High"] - df["Low"]) 
+
     ticker_info_df = df.tail(1)
 
     ticker_info_dict = {"Symbol":stock}
@@ -85,6 +89,22 @@ def get_ticker_details (stock):
         ticker_info_dict ["GT5"] = 1
     else:
         ticker_info_dict ["GT5"] = 0
+
+    # Cross KMA
+
+    if ticker_info_df.iloc[0]["SMA_20"] >= ticker_info_df.iloc[0]["Low"] and ticker_info_df.iloc[0]["SMA_20"] < ticker_info_df.iloc[0]["High"]:
+        ticker_info_dict ["X20"] = 1
+    else:
+        ticker_info_dict ["X20"] = 0
+
+    if ticker_info_df.iloc[0]["SMA_50"] >= ticker_info_df.iloc[0]["Low"] and ticker_info_df.iloc[0]["SMA_50"] < ticker_info_df.iloc[0]["High"]:
+        ticker_info_dict ["X50"] = 1
+    else:
+        ticker_info_dict ["X50"] = 0
+
+    # Rel Vol (Daily)
+
+    ticker_info_dict ["RVolume"] = ticker_info_df.iloc[0]["RVolume"].round(2)
 
     # Get High and Low AWAP
 
@@ -119,6 +139,7 @@ def get_ticker_details (stock):
     else:
         ticker_info_dict ["GT_AVWAP"] = 0        
 
+    ticker_info_dict ["Closing Range"] = ticker_info_df.iloc[0]["Closing Range"].round(2)
 
     return ticker_info_dict
 

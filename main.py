@@ -1,6 +1,7 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, url_for
 import analyze_ticker
 import access_google_sheet
+#import requests
 
 def main():
     symbol_list = access_google_sheet.get_symbols_from_sheet()
@@ -23,10 +24,30 @@ def main():
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def home():
-    return '<H1>Home Page</H>'
+    return render_template('home.html')
+
+@app.route("/analyze", methods=['GET', 'POST'])
+def analyze():
+    if request.method == "POST":
+        stock = request.form["stock"]
+        stock = stock.upper()        
+
+        if stock != "":
+            #response = requests.get ("https://stock-screen-sheet.uk.r.appspot.com/ticker_info?symbol="+stock)
+            stockdict = analyze_ticker.get_ticker_details(stock=stock)
+
+            return render_template('analyze.html', rstock = stock, stockdict = stockdict)
+        else:            
+            return render_template('analyze.html', rstock = "", stockdict = {})        
+    else:
+        return render_template('analyze.html', rstock = "", stockdict = {})        
+
+
+@app.route("/about")
+def about():
+    return "<H1>About Page!</H1>"
 
 
 @app.route("/ticker_info")
