@@ -29,3 +29,4 @@ ta==0.7.0
 urllib3==1.26.6
 Werkzeug==2.0.1
 yfinance==0.1.63
+beautifulsoup4==4.9.3

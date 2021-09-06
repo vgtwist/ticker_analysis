@@ -26,13 +26,15 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return render_template('home.html')
+    kpi = analyze_ticker.get_kpi()
+    ww_ind = analyze_ticker.get_wishingwealth_ind()
+    return render_template('home.html', kpi = kpi, ww_ind = ww_ind)
 
 @app.route("/analyze", methods=['GET', 'POST'])
 def analyze():
     if request.method == "POST":
         stock = request.form["stock"]
-        stock = stock.upper()        
+        stock = stock.upper().strip()           
 
         if stock != "":
             #response = requests.get ("https://stock-screen-sheet.uk.r.appspot.com/ticker_info?symbol="+stock)
@@ -47,7 +49,7 @@ def analyze():
 
 @app.route("/about")
 def about():
-    return "<H1>About Page!</H1>"
+    return render_template('about.html')
 
 
 @app.route("/ticker_info")

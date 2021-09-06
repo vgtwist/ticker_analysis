@@ -5,6 +5,10 @@ import datetime as dt
 from pandas_datareader import data as pdr
 from ta.trend import SMAIndicator
 
+from bs4 import BeautifulSoup
+import requests
+
+
 yf.pdr_override ()
 
 def get_avwap (df):
@@ -143,11 +147,46 @@ def get_ticker_details (stock):
 
     return ticker_info_dict
 
-def main():
-    stock = input ("Enter Symbol: ")
-    stock_data = get_ticker_details (stock)
-    print (stock_data)
+def get_wishingwealth_ind ():
+    url = "https://wishingwealthblog.com/"
 
+    result = requests.get(url)
+    doc = BeautifulSoup(result.text, "html.parser")
+
+    gmi = doc.find_all(["span"], class_="indicator-value")
+
+    ww_indicator_dict = {}
+
+    ww_indicator_dict ["GMI"] = gmi[0].string
+    ww_indicator_dict ["T2108"] = gmi[2].string
+    return (ww_indicator_dict)
+
+def get_kpi():
+    kpi_dict = {}
+    kpi_tickers = ['QQQ', 'SPY', 'FFTY']
+
+    for ticker in kpi_tickers:
+        ticker_info = get_ticker_details(ticker)
+        if ticker_info ["GT200"] == 1 and ticker_info ["GT50"] == 1 and ticker_info ["GT20"] == 1:
+            indicator = 1
+        elif ticker_info ["GT200"] == 1 and ticker_info ["GT50"] == 1 and ticker_info ["GT20"] == 0:
+            indicator = 0
+        else:
+            indicator = -1
+
+        kpi_dict [ticker] = indicator
+
+    return kpi_dict
+
+
+
+def main():
+    #stock = input ("Enter Symbol: ")
+    #stock_data = get_ticker_details (stock)
+    #print (stock_data)
+
+    kpi = get_kpi()
+    print (kpi)
 
 if __name__=="__main__":
     main ()
