@@ -1,27 +1,3 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="row">
-  {% for i in kpi %}
-  <div class="col-sm-2">
-    {% if kpi[i] == 1 %}
-      <div class="card text-white bg-success mb-3 text-center">
-    {% elif kpi[i] == 0 %}    
-      <div class="card text-white bg-warning mb-3 text-center"> 
-    {% else %}     
-      <div class="card text-white bg-danger mb-3 text-center"> 
-    {% endif %}     
-      <div class="card-body">
-        <h5 class="card-title text-center">{{ i }}</h5>
-      </div>
-    </div>
-  </div>    
-  {% endfor %}
-</div>
-<div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
-  <div class="card-header">Wishing Wealth Indicator</div>
-  <div class="card-body">
-    <p class="card-text">GMI : {{ ww_ind["GMI"] }} / 6</p>
-    <p class="card-text">T2108 : {{ ww_ind["T2108"] }}</p>
-  </div>
-</div>
 {% endblock content %}

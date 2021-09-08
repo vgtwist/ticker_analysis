@@ -97,18 +97,25 @@ def get_ticker_details (stock):
     # Cross KMA
 
     if ticker_info_df.iloc[0]["SMA_20"] >= ticker_info_df.iloc[0]["Low"] and ticker_info_df.iloc[0]["SMA_20"] < ticker_info_df.iloc[0]["High"]:
-        ticker_info_dict ["X20"] = 1
+        if ticker_info_df.iloc[0]["Adj Close"] >= ticker_info_df.iloc[0]["SMA_20"]:
+            ticker_info_dict ["X20"] = 1
+        else:
+            ticker_info_dict ["X20"] = -1    
     else:
         ticker_info_dict ["X20"] = 0
 
     if ticker_info_df.iloc[0]["SMA_50"] >= ticker_info_df.iloc[0]["Low"] and ticker_info_df.iloc[0]["SMA_50"] < ticker_info_df.iloc[0]["High"]:
-        ticker_info_dict ["X50"] = 1
+        if ticker_info_df.iloc[0]["Adj Close"] >= ticker_info_df.iloc[0]["SMA_50"]:
+            ticker_info_dict ["X50"] = 1
+        else:
+            ticker_info_dict ["X50"] = -1    
     else:
         ticker_info_dict ["X50"] = 0
 
     # Rel Vol (Daily)
 
     ticker_info_dict ["RVolume"] = ticker_info_df.iloc[0]["RVolume"].round(2)
+      
 
     # Get High and Low AWAP
 
@@ -144,6 +151,31 @@ def get_ticker_details (stock):
         ticker_info_dict ["GT_AVWAP"] = 0        
 
     ticker_info_dict ["Closing Range"] = ticker_info_df.iloc[0]["Closing Range"].round(2)
+
+    # Acc Dist Day
+
+    if ticker_info_dict ["RVolume"] > 1.2:
+        if ticker_info_dict ["Closing Range"] > .6:
+            ticker_info_dict ["AD Day"] = 1
+        elif ticker_info_dict ["Closing Range"] < .3:    
+            ticker_info_dict ["AD Day"] = -1
+        else:
+            ticker_info_dict ["AD Day"] = 0
+    else:
+        ticker_info_dict ["AD Day"] = 0
+
+    # buy sell signal
+
+    ticker_info_dict ["Signal"] = "-"
+
+    if ticker_info_dict ["AD Day"] == 1:
+        if ticker_info_dict ["X20"] == 1 or ticker_info_dict ["X50"] == 1:
+            if ticker_info_dict ["GT50"] == 1:
+                ticker_info_dict ["Signal"] = "Buy"
+    elif ticker_info_dict ["AD Day"] == -1:
+        if ticker_info_dict ["X20"] == -1 or ticker_info_dict ["X50"] == -1:
+            ticker_info_dict ["Signal"] = "Sell"
+
 
     return ticker_info_dict
 
@@ -181,12 +213,12 @@ def get_kpi():
 
 
 def main():
-    #stock = input ("Enter Symbol: ")
-    #stock_data = get_ticker_details (stock)
-    #print (stock_data)
+    stock = input ("Enter Symbol: ")
+    stock_data = get_ticker_details (stock)
+    print (stock_data)
 
-    kpi = get_kpi()
-    print (kpi)
+    #kpi = get_kpi()
+    #print (kpi)
 
 if __name__=="__main__":
     main ()
