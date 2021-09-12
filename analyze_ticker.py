@@ -116,13 +116,19 @@ def get_ticker_details (stock):
 
     ticker_info_dict ["RVolume"] = ticker_info_df.iloc[0]["RVolume"].round(2)
       
+    # KMA Pinch
+
+    kma_max = max([ticker_info_df.iloc[0]["SMA_50"], ticker_info_df.iloc[0]["SMA_20"], ticker_info_df.iloc[0]["SMA_200"]])
+    kma_min = min([ticker_info_df.iloc[0]["SMA_50"], ticker_info_df.iloc[0]["SMA_20"], ticker_info_df.iloc[0]["SMA_200"]])
+
+    ticker_info_dict ["KMA Pinch"] = round(abs(kma_max - kma_min)/kma_max, 2)
 
     # Get High and Low AWAP
 
     high_rec = df[df['High']==df['High'].max()] 
     high_date = high_rec.index[0]    
 
-    ticker_info_dict ["High Date"] = high_date
+    ticker_info_dict ["High Date"] = high_date.strftime('%Y-%m-%d')
 
     df_from_high = df.loc[high_date:]
     ticker_info_dict ["AVWAP High"] = get_avwap (df_from_high)
@@ -138,7 +144,7 @@ def get_ticker_details (stock):
         
     low_date = low_rec.index[0]    
 
-    ticker_info_dict ["Low Date"] = low_date
+    ticker_info_dict ["Low Date"] = low_date.strftime('%Y-%m-%d')
 
     df_from_low = df.loc[low_date:]
     ticker_info_dict ["AVWAP Low"] = get_avwap (df_from_low)
@@ -151,6 +157,10 @@ def get_ticker_details (stock):
         ticker_info_dict ["GT_AVWAP"] = 0        
 
     ticker_info_dict ["Closing Range"] = ticker_info_df.iloc[0]["Closing Range"].round(2)
+
+    # AVWAP Pinch
+
+    ticker_info_dict ["AVWAP Pinch"] = round((ticker_info_dict ["AVWAP High"] - ticker_info_dict ["AVWAP Low"])/ticker_info_dict ["AVWAP High"], 2)
 
     # Acc Dist Day
 
@@ -210,15 +220,30 @@ def get_kpi():
 
     return kpi_dict
 
+def get_ticker_details_multiple (stocklist):
+    # accept stocklist a list of stocks
+    
+    stockdetailsdict = {}
 
+    for stock in stocklist:
+        stock = stock.upper().strip()
+        stockdatadict = get_ticker_details (stock)
+        stockdetailsdict[stockdatadict["Symbol"]] = stockdatadict
+
+    return stockdetailsdict
 
 def main():
-    stock = input ("Enter Symbol: ")
-    stock_data = get_ticker_details (stock)
-    print (stock_data)
+    #stock = input ("Enter Symbol: ")
+    #stock_data = get_ticker_details (stock)
+    #print (stock_data)
 
     #kpi = get_kpi()
     #print (kpi)
+
+    details = get_ticker_details_multiple(['AAPL', 'TSLA', 'AMD'])
+    #df = pd.DataFrame.from_dict(details, orient='index')
+    print (details )
+    
 
 if __name__=="__main__":
     main ()
