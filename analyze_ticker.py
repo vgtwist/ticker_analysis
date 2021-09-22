@@ -186,6 +186,9 @@ def get_ticker_details (stock):
         if ticker_info_dict ["X20"] == -1 or ticker_info_dict ["X50"] == -1:
             ticker_info_dict ["Signal"] = "Sell"
 
+    # score
+
+    ticker_info_dict ["Score"] = (ticker_info_dict ["GT200"] * 3) + (ticker_info_dict ["GT50"] * 2) + ticker_info_dict ["GT20"] + ticker_info_dict ["GT_AVWAP"] + ticker_info_dict ["AD Day"]
 
     return ticker_info_dict
 
@@ -230,6 +233,11 @@ def get_ticker_details_multiple (stocklist):
         stockdatadict = get_ticker_details (stock)
         stockdetailsdict[stockdatadict["Symbol"]] = stockdatadict
 
+    df = pd.DataFrame.from_dict(stockdetailsdict, orient ='index')
+    df = df.sort_values("Score")
+    stockdetailsdict = df.to_dict(orient ='index')
+
+
     return stockdetailsdict
 
 def main():
@@ -241,7 +249,7 @@ def main():
     #print (kpi)
 
     details = get_ticker_details_multiple(['AAPL', 'TSLA', 'AMD'])
-    #df = pd.DataFrame.from_dict(details, orient='index')
+
     print (details )
     
 
