@@ -1,0 +1,1 @@
+- Capture screen info from finviz on a daily basis

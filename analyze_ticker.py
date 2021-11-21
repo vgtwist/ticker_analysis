@@ -4,6 +4,7 @@ import yfinance as yf
 import datetime as dt
 from pandas_datareader import data as pdr
 from ta.trend import SMAIndicator
+from ta.volatility import BollingerBands
 
 from bs4 import BeautifulSoup
 import requests
@@ -18,7 +19,7 @@ def get_avwap (df):
     df['AWVAP'] = df['avg price vol cum sum'] / df['vol cum sum']
     return round(df.tail(1).iloc[0]['AWVAP'],2)
 
-def get_ticker_details (stock):
+def get_ticker_df (stock, start = dt.datetime.now() - dt.timedelta(days=300), end = dt.datetime.now()):
     #stock = input ("Enter a stock ticker symbol: ")
     #stock = "TSLA"
 
@@ -27,10 +28,6 @@ def get_ticker_details (stock):
 
     RECENT_HIGH_DAYS = 6
 
-    start = dt.datetime.now() - dt.timedelta(days=300)
-    end = dt.datetime.now()
-
-    print(end)
     df = pdr.get_data_yahoo (stock, start, end)
 
     # Fill in SMA
@@ -51,6 +48,10 @@ def get_ticker_details (stock):
 
     df["SMA_50"] = indicator_sma.sma_indicator()
 
+    indicator_sma = SMAIndicator(close=df[col_name], window=150, fillna=True)
+
+    df["SMA_150"] = indicator_sma.sma_indicator()
+
     indicator_sma = SMAIndicator(close=df[col_name], window=200, fillna=True)
 
     df["SMA_200"] = indicator_sma.sma_indicator()
@@ -64,6 +65,34 @@ def get_ticker_details (stock):
     df["RVolume"] = df["Volume"] / df["Volume_SMA_20"]
 
     df["Closing Range"] = (df["Adj Close"] - df["Low"]) / (df["High"] - df["Low"]) 
+
+    indicator_bb = BollingerBands(close=df["Adj Close"], window=15, window_dev=2)
+
+    # Add Bollinger Bands features
+    df['BB High'] = indicator_bb.bollinger_hband()
+    df['BB Low'] = indicator_bb.bollinger_lband()
+
+    high_vol = df["RVolume"] > 1.2
+    high_dcr = df["Closing Range"] > .6
+    low_dcr = df["Closing Range"] < .3
+    df.loc[high_vol & high_dcr, "AccDist"] = "A" 
+    df.loc[high_vol & low_dcr, "AccDist"] = "D" 
+
+    return df
+
+def get_ticker_details (stock):
+    #stock = input ("Enter a stock ticker symbol: ")
+    #stock = "TSLA"
+
+    #start = dt.datetime (2019, 1, 1)
+    #end = dt.datetime (2020, 1, 1)
+
+    RECENT_HIGH_DAYS = 6
+
+    #start = dt.datetime.now() - dt.timedelta(days=300)
+    #end = dt.datetime.now()
+
+    df = get_ticker_df(stock)
 
     ticker_info_df = df.tail(1)
 
@@ -164,15 +193,13 @@ def get_ticker_details (stock):
 
     # Acc Dist Day
 
-    if ticker_info_dict ["RVolume"] > 1.2:
-        if ticker_info_dict ["Closing Range"] > .6:
-            ticker_info_dict ["AD Day"] = 1
-        elif ticker_info_dict ["Closing Range"] < .3:    
-            ticker_info_dict ["AD Day"] = -1
-        else:
-            ticker_info_dict ["AD Day"] = 0
+    if ticker_info_df.iloc[0]["AccDist"] == "A":
+        ticker_info_dict ["AD Day"] = 1
+    elif ticker_info_df.iloc[0]["AccDist"] == "D":            
+        ticker_info_dict ["AD Day"] = -1
     else:
-        ticker_info_dict ["AD Day"] = 0
+        ticker_info_dict ["AD Day"] = 0        
+
 
     # buy sell signal
 
@@ -186,9 +213,33 @@ def get_ticker_details (stock):
         if ticker_info_dict ["X20"] == -1 or ticker_info_dict ["X50"] == -1:
             ticker_info_dict ["Signal"] = "Sell"
 
+    # BB Indicator
+
+    ticker_info_dict["BB Status"] = '-'
+
+    if ticker_info_dict["price"] > ticker_info_df.iloc[0]["BB High"] :
+        ticker_info_dict["BB Status"] = 'Extended'
+
+    if ticker_info_dict["price"] < ticker_info_df.iloc[0]["BB Low"] :
+        ticker_info_dict["BB Status"] = 'Oversold'
+
+    # MM Trend Template Indicator
+
+    highval = df["Adj Close"].max()
+    lowval = df["Adj Close"].min()
+    currval = ticker_info_df.iloc[0]["Adj Close"]
+    highpct = (highval - currval) / highval
+    lowpct = (currval - lowval) / lowval
+
+    if currval > ticker_info_df.iloc[0]["SMA_50"] >= ticker_info_df.iloc[0]["SMA_150"] >= ticker_info_df.iloc[0]["SMA_200"] and highpct < .25 and lowpct > .30 :
+        ticker_info_dict ["MM Trend"] = 1
+    else:    
+        ticker_info_dict ["MM Trend"] = 0
+
     # score
 
     ticker_info_dict ["Score"] = (ticker_info_dict ["GT200"] * 3) + (ticker_info_dict ["GT50"] * 2) + ticker_info_dict ["GT20"] + ticker_info_dict ["GT_AVWAP"] + ticker_info_dict ["AD Day"]
+    #ticker_info_dict ["Score"] = ticker_info_dict ["Score"] + ticker_info_dict["BB Extreme"]
 
     return ticker_info_dict
 
